@@ -10,9 +10,9 @@ library(rvest)
 # Location of the public bodies list
 html <- read_html("https://www.gov.scot/publications/national-public-bodies-directory/pages/executive-non-departmental-public-bodies/")
 
-# Testing different functions -------------------------------------------------
-# 
-# 
+#=========================================================
+# Scraping websites
+#=========================================================
 website_last_updated <- html_element(html,"#sg-meta__last-updated-date") |>
   html_text2()
 
@@ -31,6 +31,9 @@ pb_names <- public_bodies |>  html_element("strong") |> html_text2()
 # So let's just get the names of all bodies first. Define a tibble which holds the URLs
 root_to_scrape <- "https://www.gov.scot/publications/national-public-bodies-directory/pages/"
 
+
+# Define tibble which holds the specific subpage the different type of bodies are listed, and the 
+# html tag associated with the relevant information.
 urls_to_scrape <- tribble(~path_ends, ~type, ~html_elements,
                     "advisory-non-departmental-public-bodies/","Advisory NDPB",".js-content-wrapper p",
                     "executive-non-departmental-public-bodies/","Executive NDPB",".js-content-wrapper p",
@@ -39,7 +42,7 @@ urls_to_scrape <- tribble(~path_ends, ~type, ~html_elements,
                     "health-bodies/", "Health Bodies",".js-content-wrapper p",
                     "non-ministerial-offices/", "NMO",".js-content-wrapper p",
                     "commissioners-and-ombudsmen/", "Commissioners and Ombudsmen",".js-content-wrapper p",
-                    "other-significant-national-bodies/", "Other Significant Bodies","h3") 
+                    "other-significant-national-bodies/", "Other Significant Bodies",".js-content-wrapper p") 
 
 urls_to_scrape <-
   urls_to_scrape |> mutate(url = paste0(root_to_scrape, path_ends)) |> 
@@ -48,21 +51,29 @@ urls_to_scrape <-
 
 all_public_bodies <- pmap_df(
   urls_to_scrape,
-  .f = function(url,html_elements,type) {
-  
-    returndf <- tibble(pb = 
-      read_html(url) |>
-      html_elements(html_elements) |>  html_element("strong") |> html_text2() )
+  .f = function(url, html_elements, type) {
+    returndf <- tibble(pb =
+                         read_html(url) |>
+                         html_elements(html_elements) |>  html_element("strong") |> html_text2())
     
     returndf$type <- type
     
     return(returndf)
     
   }
-) |> filter(!is.na(pb))
+) |>
+  filter(!is.na(pb))
+
+
+#=========================================================
+# Count up totals
+#=========================================================
 
 all_public_bodies
 
-all_public_bodies |> count(type)
+(summary_table <- gt::gt(all_public_bodies |> count(type)) |> 
+    gt::cols_label(n = "Count", type = "Public Body Type"))
+
+gt::gtsave(summary_table,filename = "pb_count.png")
 
 
