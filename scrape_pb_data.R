@@ -5,6 +5,8 @@
 # Aim: To build a dataset of public bodies from the Scottish Government's online list.
 
 library(tidyverse)
+library(gt)
+library(janitor)
 library(rvest)
 
 # Location of the public bodies list
@@ -79,13 +81,17 @@ all_public_bodies <- pmap_df(
 
 all_public_bodies
 
-summary_table <- gt::gt(all_public_bodies |> count(type)) |>
+totals_pb_type <- all_public_bodies |> count(type) |> janitor::adorn_totals()
+
+summary_table <- totals_pb_type |> 
+  gt::gt() |>
   gt::cols_label(n = "Count", type = "Public Body Type") |>
   gt::tab_footnote(
     footnote = glue::glue(
       "Table last generated on {Sys.Date()}. Website data last updated on {website_last_updated}."
     )
-  )
+  ) 
+  
 
 summary_table
 
