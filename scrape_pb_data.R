@@ -72,7 +72,8 @@ all_public_bodies <- pmap_df(
 all_public_bodies
 
 (summary_table <- gt::gt(all_public_bodies |> count(type)) |> 
-    gt::cols_label(n = "Count", type = "Public Body Type"))
+    gt::cols_label(n = "Count", type = "Public Body Type")) |> 
+  gt::tab_footnote(glue::glue("Table last generated on {Sys.Date()}. Website data last updated on {website_last_updated}."),)
 
 gt::gtsave(summary_table,filename = "pb_count.png")
 
