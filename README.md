@@ -4,6 +4,8 @@ Following a conversation at work, I wanted to learn the very basics of webscrapi
 
 Currently, the script just gets the names, and even then, it isn't quite working. I think this is because the subpages with the different types of PBs have slightly different HTML structures, so I need to fine tune it.
 
+<<<<<<< HEAD
 The table below summarises the **current** total number of public bodies scraped by their type.
+
 
 ![Count of public bodies by type](pb_count.png)
